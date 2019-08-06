@@ -1,16 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageId>LibChaCha20</PackageId>
-    <VersionPrefix>0.9.1</VersionPrefix>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageId>ChaCha20_8_12</PackageId>
+    <VersionPrefix>0.1.0</VersionPrefix>
     <VersionSuffix>$(VersionSuffix)</VersionSuffix>
-    <Authors>Kaarlo Räihä</Authors>
+    <Authors>Christian Albrecht</Authors>
     <Description>C# library for ChaCha20 encrypting and decrypting</Description>
     <IncludeSource>true</IncludeSource>
-    <PackageProjectUrl>https://github.com/mcraiha/CSharp-ChaCha20-NetStandard</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/mcraiha/CSharp-ChaCha20-NetStandard.git</RepositoryUrl>
-    <PackageLicenseUrl>https://github.com/mcraiha/CSharp-ChaCha20-NetStandard/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/ChrisCA/CSharp-ChaCha20-NetStandard</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ChrisCA/CSharp-ChaCha20-NetStandard.git</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/ChrisCA/CSharp-ChaCha20-NetStandard/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
-
 </Project>
