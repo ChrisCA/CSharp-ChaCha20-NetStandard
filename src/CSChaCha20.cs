@@ -160,8 +160,6 @@ namespace CSChaCha20
 		}
 
 
-	#region Encryption methods
-
 		/// <summary>
 		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
 		/// </summary>
@@ -175,11 +173,6 @@ namespace CSChaCha20
 			return returnArray;
 		}
 
-		#endregion // Encryption methods
-
-
-		#region // Decryption methods
-
 		/// <summary>
 		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
 		/// </summary>
@@ -192,8 +185,6 @@ namespace CSChaCha20
 			WorkBytes(returnArray, input, input.Length);
 			return returnArray;
 		}
-
-		#endregion // Decryption methods
 
 		/// <summary>
 		/// Encrypt or decrypt an arbitrary-length byte array (input), writing the resulting byte array to the output buffer. The number of bytes to read from the input buffer is determined by numBytes.
@@ -312,7 +303,6 @@ namespace CSChaCha20
 			x[b] = Util.Rotate(Util.XOr(x[b], x[c]),  7);
 		}
 
-		#region Destructor and Disposer
 
 		/// <summary>
 		/// Clear and dispose of the internal state. The finalizer is only called if Dispose() was never called on this cipher.
@@ -360,8 +350,6 @@ namespace CSChaCha20
 
 			isDisposed = true;
 		}
-
-		#endregion // Destructor and Disposer
 	}
 
 	public static class Util 
