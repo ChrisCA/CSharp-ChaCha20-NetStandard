@@ -163,43 +163,6 @@ namespace CSChaCha20
 	#region Encryption methods
 
 		/// <summary>
-		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array to preallocated output buffer.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="output">Output byte array, must have enough bytes</param>
-		/// <param name="input">Input byte array</param>
-		/// <param name="numBytes">Number of bytes to encrypt</param>
-		public void EncryptBytes(byte[] output, byte[] input, int numBytes)
-		{
-			WorkBytes(output, input, numBytes);
-		}
-
-		/// <summary>
-		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array to preallocated output buffer.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="output">Output byte array, must have enough bytes</param>
-		/// <param name="input">Input byte array</param>
-		public void EncryptBytes(byte[] output, byte[] input)
-		{
-			WorkBytes(output, input, input.Length);
-		}
-
-		/// <summary>
-		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="input">Input byte array</param>
-		/// <param name="numBytes">Number of bytes to encrypt</param>
-		/// <returns>Byte array that contains encrypted bytes</returns>
-		public byte[] EncryptBytes(byte[] input, int numBytes)
-		{
-			byte[] returnArray = new byte[numBytes];
-			WorkBytes(returnArray, input, numBytes);
-			return returnArray;
-		}
-
-		/// <summary>
 		/// Encrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
 		/// </summary>
 		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
@@ -212,62 +175,10 @@ namespace CSChaCha20
 			return returnArray;
 		}
 
-		/// <summary>
-		/// Encrypt string as UTF8 byte array, returns byte array that is allocated by method.
-		/// </summary>
-		/// <remarks>Here you can NOT swap encrypt and decrypt methods, because of bytes-string transform</remarks>
-		/// <param name="input">Input string</param>
-		/// <returns>Byte array that contains encrypted bytes</returns>
-		public byte[] EncryptString(string input)
-		{
-			byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(input);
-			byte[] returnArray = new byte[utf8Bytes.Length];
-
-			WorkBytes(returnArray, utf8Bytes, utf8Bytes.Length);
-			return returnArray;
-		}
-
 		#endregion // Encryption methods
 
 
 		#region // Decryption methods
-
-		/// <summary>
-		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array to the output buffer.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="output">Output byte array</param>
-		/// <param name="input">Input byte array</param>
-		/// <param name="numBytes">Number of bytes to decrypt</param>
-		public void DecryptBytes(byte[] output, byte[] input, int numBytes)
-		{
-			WorkBytes(output, input, numBytes);
-		}
-
-		/// <summary>
-		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array to preallocated output buffer.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="output">Output byte array, must have enough bytes</param>
-		/// <param name="input">Input byte array</param>
-		public void DecryptBytes(byte[] output, byte[] input)
-		{
-			WorkBytes(output, input, input.Length);
-		}
-
-		/// <summary>
-		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
-		/// </summary>
-		/// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-		/// <param name="input">Input byte array</param>
-		/// <param name="numBytes">Number of bytes to encrypt</param>
-		/// <returns>Byte array that contains decrypted bytes</returns>
-		public byte[] DecryptBytes(byte[] input, int numBytes)
-		{
-			byte[] returnArray = new byte[numBytes];
-			WorkBytes(returnArray, input, numBytes);
-			return returnArray;
-		}
 
 		/// <summary>
 		/// Decrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
@@ -280,20 +191,6 @@ namespace CSChaCha20
 			byte[] returnArray = new byte[input.Length];
 			WorkBytes(returnArray, input, input.Length);
 			return returnArray;
-		}
-
-		/// <summary>
-		/// Decrypt UTF8 byte array to string.
-		/// </summary>
-		/// <remarks>Here you can NOT swap encrypt and decrypt methods, because of bytes-string transform</remarks>
-		/// <param name="input">Byte array</param>
-		/// <returns>Byte array that contains encrypted bytes</returns>
-		public string DecryptUTF8ByteArray(byte[] input)
-		{
-			byte[] tempArray = new byte[input.Length];
-
-			WorkBytes(tempArray, input, input.Length);
-			return System.Text.Encoding.UTF8.GetString(tempArray);
 		}
 
 		#endregion // Decryption methods
