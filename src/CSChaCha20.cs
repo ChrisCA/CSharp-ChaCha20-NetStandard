@@ -26,8 +26,6 @@ namespace CSChaCha20
 	{
 		public const int allowedKeyLength = 32;
 
-		public const int allowedNonceLength = 12;
-
 		public const int processBytesAtTime = 64;
 
 		private const int stateLength = 16;
@@ -138,17 +136,27 @@ namespace CSChaCha20
 				throw new ArgumentNullException("Nonce is null");
 			}
 
-			if (nonce.Length != allowedNonceLength) 
+            if (nonce.Length != 8 && nonce.Length != 12)
 			{
 				// There has already been some state set up. Clear it before exiting.
 				Dispose();
-				throw new ArgumentException($"Nonce length must be {allowedNonceLength}. Actual: {nonce.Length}");
+				throw new ArgumentException($"Nonce length must be 8 or 12. Actual: {nonce.Length}");
 			}
 
-			state[12] = counter;
-			state[13] = Util.U8To32Little(nonce, 0);
-			state[14] = Util.U8To32Little(nonce, 4);
-			state[15] = Util.U8To32Little(nonce, 8);
+            if (nonce.Length == 12)
+            {
+                state[12] = counter;
+                state[13] = Util.U8To32Little(nonce, 0);
+                state[14] = Util.U8To32Little(nonce, 4);
+                state[15] = Util.U8To32Little(nonce, 8);
+            }
+            if (nonce.Length == 8)
+            {
+                state[12] = counter;
+                state[13] = 0;
+                state[14] = Util.U8To32Little(nonce, 0);
+                state[15] = Util.U8To32Little(nonce, 4);
+            }
 		}
 
 
