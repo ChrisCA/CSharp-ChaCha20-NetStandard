@@ -22,7 +22,7 @@ using System.Runtime.CompilerServices; // For MethodImplOptions.AggressiveInlini
 
 namespace CSChaCha20 
 {
-	public sealed class ChaCha20 : IDisposable 
+	public class ChaCha20 
 	{
 		public const int allowedKeyLength = 32;
 
@@ -132,14 +132,14 @@ namespace CSChaCha20
 			if (nonce == null) 
 			{
 				// There has already been some state set up. Clear it before exiting.
-				Dispose();
+				// Dispose();
 				throw new ArgumentNullException("Nonce is null");
 			}
 
             if (nonce.Length != 8 && nonce.Length != 12)
 			{
 				// There has already been some state set up. Clear it before exiting.
-				Dispose();
+				// Dispose();
 				throw new ArgumentException($"Nonce length must be 8 or 12. Actual: {nonce.Length}");
 			}
 
@@ -301,54 +301,6 @@ namespace CSChaCha20
 
 			x[c] = Util.Add(x[c], x[d]); 
 			x[b] = Util.Rotate(Util.XOr(x[b], x[c]),  7);
-		}
-
-
-		/// <summary>
-		/// Clear and dispose of the internal state. The finalizer is only called if Dispose() was never called on this cipher.
-		/// </summary>
-		~ChaCha20() 
-		{
-			Dispose(false);
-		}
-
-		/// <summary>
-		/// Clear and dispose of the internal state. Also request the GC not to call the finalizer, because all cleanup has been taken care of.
-		/// </summary>
-		public void Dispose() 
-		{
-			Dispose(true);
-			/*
-			 * The Garbage Collector does not need to invoke the finalizer because Dispose(bool) has already done all the cleanup needed.
-			 */
-			GC.SuppressFinalize(this);
-		}
-
-		/// <summary>
-		/// This method should only be invoked from Dispose() or the finalizer. This handles the actual cleanup of the resources.
-		/// </summary>
-		/// <param name="disposing">
-		/// Should be true if called by Dispose(); false if called by the finalizer
-		/// </param>
-		private void Dispose(bool disposing) 
-		{
-			if (!isDisposed) 
-			{
-				if (disposing) 
-				{
-					/* Cleanup managed objects by calling their Dispose() methods */
-				}
-
-				/* Cleanup any unmanaged objects here */
-				if (state != null) 
-				{
-					Array.Clear(state, 0, state.Length);
-				}
-
-				state = null;
-			}
-
-			isDisposed = true;
 		}
 	}
 
