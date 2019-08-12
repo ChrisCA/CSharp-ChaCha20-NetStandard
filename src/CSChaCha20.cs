@@ -136,25 +136,12 @@ namespace CSChaCha20
 
 
         /// <summary>
-        /// Encrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
+        /// Encrypt/Decrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
         /// </summary>
         /// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
         /// <param name="input">Input byte array</param>
         /// <returns>Byte array that contains encrypted bytes</returns>
-        public byte[] EncryptBytes(byte[] input)
-        {
-            byte[] returnArray = new byte[input.Length];
-            WorkBytes(returnArray, input, input.Length);
-            return returnArray;
-        }
-
-        /// <summary>
-        /// Decrypt arbitrary-length byte array (input), writing the resulting byte array that is allocated by method.
-        /// </summary>
-        /// <remarks>Since this is symmetric operation, it doesn't really matter if you use Encrypt or Decrypt method</remarks>
-        /// <param name="input">Input byte array</param>
-        /// <returns>Byte array that contains decrypted bytes</returns>
-        public byte[] DecryptBytes(byte[] input)
+        public byte[] CryptBytes(byte[] input)
         {
             byte[] returnArray = new byte[input.Length];
             WorkBytes(returnArray, input, input.Length);
