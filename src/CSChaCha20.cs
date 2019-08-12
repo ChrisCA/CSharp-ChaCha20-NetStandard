@@ -30,6 +30,10 @@ namespace CSChaCha20
 
         private uint[] state = new uint[stateLength];
 
+        private byte[] Key { get; }
+        private byte[] Nonce { get; }
+        private uint Counter { get; }
+
         /// <summary>
         /// Set up a new ChaCha20 state. The lengths of the given parameters are checked before encryption happens.
         /// </summary>
@@ -47,8 +51,15 @@ namespace CSChaCha20
         /// </param>
         public ChaCha20(byte[] key, byte[] nonce, uint counter)
         {
-            KeySetup(key);
-            IvSetup(nonce, counter);
+            Key = key;
+            Nonce = nonce;
+            Counter = counter;
+        }
+
+        private void Init()
+        {
+            KeySetup(Key);
+            IvSetup(Nonce, Counter);
         }
 
         // These are the same constants defined in the reference implementation.
@@ -74,23 +85,23 @@ namespace CSChaCha20
                 throw new ArgumentException($"Key length must be {allowedKeyLength}. Actual: {key.Length}");
             }
 
-            state[4] = Util.U8To32Little(key, 0);
-            state[5] = Util.U8To32Little(key, 4);
-            state[6] = Util.U8To32Little(key, 8);
-            state[7] = Util.U8To32Little(key, 12);
+            state[4] = BitConverter.ToUInt32(key, 0);
+            state[5] = BitConverter.ToUInt32(key, 4);
+            state[6] = BitConverter.ToUInt32(key, 8);
+            state[7] = BitConverter.ToUInt32(key, 12);
 
             byte[] constants = (key.Length == allowedKeyLength) ? sigma : tau;
             int keyIndex = key.Length - 16;
 
-            state[8] = Util.U8To32Little(key, keyIndex + 0);
-            state[9] = Util.U8To32Little(key, keyIndex + 4);
-            state[10] = Util.U8To32Little(key, keyIndex + 8);
-            state[11] = Util.U8To32Little(key, keyIndex + 12);
+            state[8] = BitConverter.ToUInt32(key, keyIndex + 0);
+            state[9] = BitConverter.ToUInt32(key, keyIndex + 4);
+            state[10] = BitConverter.ToUInt32(key, keyIndex + 8);
+            state[11] = BitConverter.ToUInt32(key, keyIndex + 12);
 
-            state[0] = Util.U8To32Little(constants, 0);
-            state[1] = Util.U8To32Little(constants, 4);
-            state[2] = Util.U8To32Little(constants, 8);
-            state[3] = Util.U8To32Little(constants, 12);
+            state[0] = BitConverter.ToUInt32(constants, 0);
+            state[1] = BitConverter.ToUInt32(constants, 4);
+            state[2] = BitConverter.ToUInt32(constants, 8);
+            state[3] = BitConverter.ToUInt32(constants, 12);
         }
 
         /// <summary>
@@ -121,16 +132,16 @@ namespace CSChaCha20
             if (nonce.Length == 12)
             {
                 state[12] = counter;
-                state[13] = Util.U8To32Little(nonce, 0);
-                state[14] = Util.U8To32Little(nonce, 4);
-                state[15] = Util.U8To32Little(nonce, 8);
+                state[13] = BitConverter.ToUInt32(nonce,0);
+                state[14] = BitConverter.ToUInt32(nonce, 4);
+                state[15] = BitConverter.ToUInt32(nonce, 8);
             }
             if (nonce.Length == 8)
             {
                 state[12] = counter;
                 state[13] = 0;
-                state[14] = Util.U8To32Little(nonce, 0);
-                state[15] = Util.U8To32Little(nonce, 4);
+                state[14] = BitConverter.ToUInt32(nonce, 0);
+                state[15] = BitConverter.ToUInt32(nonce, 4);
             }
         }
 
@@ -143,6 +154,8 @@ namespace CSChaCha20
         /// <returns>Byte array that contains encrypted bytes</returns>
         public byte[] CryptBytes(byte[] input)
         {
+            Init();
+
             byte[] returnArray = new byte[input.Length];
             WorkBytes(returnArray, input, input.Length);
             return returnArray;
@@ -317,24 +330,6 @@ namespace CSChaCha20
         public static uint AddOne(uint v)
         {
             return unchecked(v + 1);
-        }
-
-        /// <summary>
-        /// Convert four bytes of the input buffer into an unsigned 32-bit integer, beginning at the inputOffset.
-        /// </summary>
-        /// <param name="p"></param>
-        /// <param name="inputOffset"></param>
-        /// <returns>An unsigned 32-bit integer</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint U8To32Little(byte[] p, int inputOffset)
-        {
-            unchecked
-            {
-                return ((uint)p[inputOffset]
-                    | ((uint)p[inputOffset + 1] << 8)
-                    | ((uint)p[inputOffset + 2] << 16)
-                    | ((uint)p[inputOffset + 3] << 24));
-            }
         }
 
         /// <summary>
