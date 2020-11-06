@@ -16,17 +16,31 @@
  */
 
 using System;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Runtime.CompilerServices; // For MethodImplOptions.AggressiveInlining
 
 namespace CSChaCha20 
 {
+	/// <summary>
+	/// Class that can be used for ChaCha20 encryption / decryption
+	/// </summary>
 	public sealed class ChaCha20 : IDisposable 
 	{
+		/// <summary>
+		/// Only allowed key lenght in bytes
+		/// </summary>
 		public const int allowedKeyLength = 32;
 
+		/// <summary>
+		/// Only allowed nonce lenght in bytes
+		/// </summary>
 		public const int allowedNonceLength = 12;
 
+		/// <summary>
+		/// How many bytes are processed per loop
+		/// </summary>
 		public const int processBytesAtTime = 64;
 
 		private const int stateLength = 16;
@@ -162,7 +176,29 @@ namespace CSChaCha20
 		/// <param name="numBytes">Number of bytes to encrypt</param>
 		public void EncryptBytes(byte[] output, byte[] input, int numBytes)
 		{
-			WorkBytes(output, input, numBytes);
+			this.WorkBytes(output, input, numBytes);
+		}
+
+		/// <summary>
+		/// Encrypt arbitrary-length byte stream (input), writing the resulting bytes to another stream (output)
+		/// </summary>
+		/// <param name="output">Output stream</param>
+		/// <param name="input">Input stream</param>
+		/// <param name="howManyBytesToProcessAtTime">How many bytes to read and write at time, default is 1024</param>
+		public void EncryptStream(Stream output, Stream input, int howManyBytesToProcessAtTime = 1024)
+		{
+			this.WorkStreams(output, input, howManyBytesToProcessAtTime);
+		}
+
+		/// <summary>
+		/// Async encrypt arbitrary-length byte stream (input), writing the resulting bytes to another stream (output)
+		/// </summary>
+		/// <param name="output">Output stream</param>
+		/// <param name="input">Input stream</param>
+		/// <param name="howManyBytesToProcessAtTime">How many bytes to read and write at time, default is 1024</param>
+		public async Task EncryptStreamAsync(Stream output, Stream input, int howManyBytesToProcessAtTime = 1024)
+		{
+			await this.WorkStreamsAsync(output, input, howManyBytesToProcessAtTime);
 		}
 
 		/// <summary>
@@ -173,7 +209,7 @@ namespace CSChaCha20
 		/// <param name="input">Input byte array</param>
 		public void EncryptBytes(byte[] output, byte[] input)
 		{
-			WorkBytes(output, input, input.Length);
+			this.WorkBytes(output, input, input.Length);
 		}
 
 		/// <summary>
@@ -186,7 +222,7 @@ namespace CSChaCha20
 		public byte[] EncryptBytes(byte[] input, int numBytes)
 		{
 			byte[] returnArray = new byte[numBytes];
-			WorkBytes(returnArray, input, numBytes);
+			this.WorkBytes(returnArray, input, numBytes);
 			return returnArray;
 		}
 
@@ -199,7 +235,7 @@ namespace CSChaCha20
 		public byte[] EncryptBytes(byte[] input)
 		{
 			byte[] returnArray = new byte[input.Length];
-			WorkBytes(returnArray, input, input.Length);
+			this.WorkBytes(returnArray, input, input.Length);
 			return returnArray;
 		}
 
@@ -214,7 +250,7 @@ namespace CSChaCha20
 			byte[] utf8Bytes = System.Text.Encoding.UTF8.GetBytes(input);
 			byte[] returnArray = new byte[utf8Bytes.Length];
 
-			WorkBytes(returnArray, utf8Bytes, utf8Bytes.Length);
+			this.WorkBytes(returnArray, utf8Bytes, utf8Bytes.Length);
 			return returnArray;
 		}
 
@@ -232,7 +268,29 @@ namespace CSChaCha20
 		/// <param name="numBytes">Number of bytes to decrypt</param>
 		public void DecryptBytes(byte[] output, byte[] input, int numBytes)
 		{
-			WorkBytes(output, input, numBytes);
+			this.WorkBytes(output, input, numBytes);
+		}
+
+		/// <summary>
+		/// Decrypt arbitrary-length byte stream (input), writing the resulting bytes to another stream (output)
+		/// </summary>
+		/// <param name="output">Output stream</param>
+		/// <param name="input">Input stream</param>
+		/// <param name="howManyBytesToProcessAtTime">How many bytes to read and write at time, default is 1024</param>
+		public void DecryptStream(Stream output, Stream input, int howManyBytesToProcessAtTime = 1024)
+		{
+			this.WorkStreams(output, input, howManyBytesToProcessAtTime);
+		}
+
+		/// <summary>
+		/// Async decrypt arbitrary-length byte stream (input), writing the resulting bytes to another stream (output)
+		/// </summary>
+		/// <param name="output">Output stream</param>
+		/// <param name="input">Input stream</param>
+		/// <param name="howManyBytesToProcessAtTime">How many bytes to read and write at time, default is 1024</param>
+		public async Task DecryptStreamAsync(Stream output, Stream input, int howManyBytesToProcessAtTime = 1024)
+		{
+			await this.WorkStreamsAsync(output, input, howManyBytesToProcessAtTime);
 		}
 
 		/// <summary>
@@ -289,12 +347,58 @@ namespace CSChaCha20
 
 		#endregion // Decryption methods
 
+		private void WorkStreams(Stream output, Stream input, int howManyBytesToProcessAtTime = 1024)
+		{
+			BinaryReader reader = new BinaryReader(input);
+			BinaryWriter writer = new BinaryWriter(output);
+
+			byte[] bytesToRead = reader.ReadBytes(howManyBytesToProcessAtTime);
+			byte[] bytesToWrite = new byte[bytesToRead.Length];
+
+			while (bytesToRead.Length > 0)
+			{
+				// Reallocate only when needed
+				if (bytesToWrite.Length != bytesToRead.Length)
+				{
+					bytesToWrite = new byte[bytesToRead.Length];
+				}
+
+				// Encrypt or decrypt
+				WorkBytes(output: bytesToWrite, input: bytesToRead, numBytes: bytesToRead.Length);
+
+				// Write
+				writer.Write(bytesToWrite);
+
+				// Read more
+				bytesToRead = reader.ReadBytes(howManyBytesToProcessAtTime);
+			}		
+		}
+
+		private async Task WorkStreamsAsync(Stream output, Stream input, int howManyBytesToProcessAtTime = 1024)
+		{
+			byte[] readBytesBuffer = new byte[howManyBytesToProcessAtTime];
+			byte[] writeBytesBuffer = new byte[howManyBytesToProcessAtTime];
+			int howManyBytesWereRead = await input.ReadAsync(readBytesBuffer, 0, howManyBytesToProcessAtTime);
+
+			while (howManyBytesWereRead > 0)
+			{
+				// Encrypt or decrypt
+				WorkBytes(output: writeBytesBuffer, input: readBytesBuffer, numBytes: howManyBytesWereRead);
+
+				// Write
+				await output.WriteAsync(writeBytesBuffer, 0, howManyBytesWereRead);
+
+				// Read more
+				howManyBytesWereRead = await input.ReadAsync(readBytesBuffer, 0, howManyBytesToProcessAtTime);
+			}		
+		}
+
 		/// <summary>
 		/// Encrypt or decrypt an arbitrary-length byte array (input), writing the resulting byte array to the output buffer. The number of bytes to read from the input buffer is determined by numBytes.
 		/// </summary>
-		/// <param name="output"></param>
-		/// <param name="input"></param>
-		/// <param name="numBytes"></param>
+		/// <param name="output">Output byte array</param>
+		/// <param name="input">Input byte array</param>
+		/// <param name="numBytes">How many bytes to process</param>
 		private void WorkBytes(byte[] output, byte[] input, int numBytes) 
 		{
 			if (isDisposed) 
@@ -324,8 +428,7 @@ namespace CSChaCha20
 
 			uint[] x = new uint[stateLength];    // Working buffer
 			byte[] tmp = new byte[processBytesAtTime];  // Temporary buffer
-			int outputOffset = 0;
-			int inputOffset = 0;
+			int offset = 0;
 
 			while (numBytes > 0) 
 			{
@@ -362,7 +465,7 @@ namespace CSChaCha20
 				{
 					for (int i = 0; i < numBytes; i++) 
 					{
-						output[i + outputOffset] = (byte) (input[i + inputOffset] ^ tmp[i]);
+						output[i + offset] = (byte) (input[i + offset] ^ tmp[i]);
 					}
 
 					return;
@@ -370,12 +473,11 @@ namespace CSChaCha20
 
 				for (int i = 0; i < processBytesAtTime; i++ ) 
 				{
-					output[i + outputOffset] = (byte) (input[i + inputOffset] ^ tmp[i]);
+					output[i + offset] = (byte) (input[i + offset] ^ tmp[i]);
 				}
 
 				numBytes -= processBytesAtTime;
-				outputOffset += processBytesAtTime;
-				inputOffset += processBytesAtTime;
+				offset += processBytesAtTime;
 			}
 		}
 
@@ -458,6 +560,9 @@ namespace CSChaCha20
 		#endregion // Destructor and Disposer
 	}
 
+	/// <summary>
+	/// Utilities that are used during compression
+	/// </summary>
 	public static class Util 
 	{
 		/// <summary>
